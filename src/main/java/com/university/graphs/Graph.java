@@ -49,11 +49,11 @@ public final class Graph {
 
     public void addArc(int from, int to){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
-            vertexHashMap.get(from).addArc(vertexHashMap.get(to), 1);
-            vertexHashMap.get(to).addArc(vertexHashMap.get(from), 1);
+            vertexHashMap.get(from).addArc(to, 1);
+            vertexHashMap.get(to).addArc(from, 1);
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
-            vertexHashMap.get(from).addArc(vertexHashMap.get(to), 1);
+            vertexHashMap.get(from).addArc(to, 1);
         }
         else if(typeOfGraph != null){
             throw new IllegalArgumentException("your graph has a weight, use addArcWithWeight()");
@@ -65,11 +65,11 @@ public final class Graph {
 
     public void addArcWithWeight(int from, int to, int weight){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS)) {
-            vertexHashMap.get(from).addArc(vertexHashMap.get(to), weight);
-            vertexHashMap.get(to).addArc(vertexHashMap.get(from), weight);
+            vertexHashMap.get(from).addArc(to, weight);
+            vertexHashMap.get(to).addArc(from, weight);
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)){
-            vertexHashMap.get(from).addArc(vertexHashMap.get(to), weight);
+            vertexHashMap.get(from).addArc(to, weight);
         }
         else if(typeOfGraph != null){
             throw new IllegalArgumentException("your graph hasn't a weight, use addArc()");
@@ -82,12 +82,12 @@ public final class Graph {
     public void deleteArc(int from, int to){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS) ||
                 typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
-            vertexHashMap.get(from).deleteArc(vertexHashMap.get(to));
-            vertexHashMap.get(to).deleteArc(vertexHashMap.get(from));
+            vertexHashMap.get(from).deleteArc(to);
+            vertexHashMap.get(to).deleteArc(from);
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)||
                 typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
-            vertexHashMap.get(from).deleteArc(vertexHashMap.get(to));
+            vertexHashMap.get(from).deleteArc(to);
         }
         else{
             throw new NullPointerException("type of graph didn't be init");
@@ -99,7 +99,7 @@ public final class Graph {
             throw new NullPointerException("type of graph didn't be init");
         }
         vertexHashMap.forEach((index, vertex) -> {
-            vertex.deleteArc(vertexHashMap.get(vertId));
+            vertex.deleteArc(vertId);
         });
         vertexHashMap.remove(vertexHashMap.get(vertId));
     }
