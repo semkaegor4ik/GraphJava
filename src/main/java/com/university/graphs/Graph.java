@@ -12,49 +12,48 @@ import java.util.stream.Collectors;
 
 @Data
 public final class Graph {
-    private final Map<Integer,Vertex> vertexList;
+    private final HashMap<Integer,Vertex> vertexHashMap;
     private TypeOfGraph typeOfGraph;
 
     public Graph() {
-        vertexList = new HashMap<>();
+        vertexHashMap = new HashMap<>();
     }
 
     public Graph(String filePath){
-        vertexList = new HashMap<>();
+        vertexHashMap = new HashMap<>();
         initGraph(filePath);
     }
 
     public Graph(Graph graph){
-        vertexList = new HashMap<>();
+        vertexHashMap = new HashMap<>();
         typeOfGraph = graph.getTypeOfGraph();
-        vertexList.addAll(graph.getVertexList());
+        vertexHashMap.putAll(graph.getVertexHashMap());
     }
 
     public Graph(TypeOfGraph typeOfGraph) {
         this.typeOfGraph = typeOfGraph;
-        vertexList = new HashMap<>();
+        vertexHashMap = new HashMap<>();
     }
 
     public void addVertex(int id){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
-        vertexList.forEach(vertex -> {
+        vertexHashMap.forEach((index, vertex) -> {
             if(vertex.getId() == id){
                 throw new IllegalArgumentException();
             }
         });
-        vertexList.
-        vertexList.add(id, new Vertex(id));
+        vertexHashMap.put(id, new Vertex(id));
     }
 
     public void addArc(int from, int to){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
-            vertexList.get(from).addArc(vertexList.get(to), 1);
-            vertexList.get(to).addArc(vertexList.get(from), 1);
+            vertexHashMap.get(from).addArc(vertexHashMap.get(to), 1);
+            vertexHashMap.get(to).addArc(vertexHashMap.get(from), 1);
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
-            vertexList.get(from).addArc(vertexList.get(to), 1);
+            vertexHashMap.get(from).addArc(vertexHashMap.get(to), 1);
         }
         else if(typeOfGraph != null){
             throw new IllegalArgumentException("your graph has a weight, use addArcWithWeight()");
@@ -66,11 +65,11 @@ public final class Graph {
 
     public void addArcWithWeight(int from, int to, int weight){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS)) {
-            vertexList.get(from).addArc(vertexList.get(to), weight);
-            vertexList.get(to).addArc(vertexList.get(from), weight);
+            vertexHashMap.get(from).addArc(vertexHashMap.get(to), weight);
+            vertexHashMap.get(to).addArc(vertexHashMap.get(from), weight);
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)){
-            vertexList.get(from).addArc(vertexList.get(to), weight);
+            vertexHashMap.get(from).addArc(vertexHashMap.get(to), weight);
         }
         else if(typeOfGraph != null){
             throw new IllegalArgumentException("your graph hasn't a weight, use addArc()");
@@ -83,12 +82,12 @@ public final class Graph {
     public void deleteArc(int from, int to){
         if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS) ||
                 typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
-            vertexList.get(from).deleteArc(vertexList.get(to));
-            vertexList.get(to).deleteArc(vertexList.get(from));
+            vertexHashMap.get(from).deleteArc(vertexHashMap.get(to));
+            vertexHashMap.get(to).deleteArc(vertexHashMap.get(from));
         }
         else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)||
                 typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
-            vertexList.get(from).deleteArc(vertexList.get(to));
+            vertexHashMap.get(from).deleteArc(vertexHashMap.get(to));
         }
         else{
             throw new NullPointerException("type of graph didn't be init");
@@ -99,10 +98,14 @@ public final class Graph {
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
-        vertexList.forEach(vertex -> {
-            vertex.deleteArc(vertexList.get(vertId));
+        vertexHashMap.forEach((index, vertex) -> {
+            vertex.deleteArc(vertexHashMap.get(vertId));
         });
-        vertexList.remove(vertexList.get(vertId));
+        vertexHashMap.remove(vertexHashMap.get(vertId));
+    }
+
+    public void show(){
+
     }
 
     private void initGraph(String fileName){
@@ -170,7 +173,7 @@ public final class Graph {
 
         AtomicBoolean first = new AtomicBoolean(false);
         AtomicBoolean second = new AtomicBoolean(false);
-        vertexList.forEach(vertex ->{
+        vertexHashMap.forEach((index, vertex) ->{
             if(vertex.getId() == firstId){
                 first.set(true);
             }
@@ -213,7 +216,7 @@ public final class Graph {
 
         AtomicBoolean first = new AtomicBoolean(false);
         AtomicBoolean second = new AtomicBoolean(false);
-        vertexList.forEach(vertex ->{
+        vertexHashMap.forEach((index, vertex) ->{
             if(vertex.getId() == firstId){
                 first.set(true);
             }
