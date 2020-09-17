@@ -1,6 +1,9 @@
 package com.university.graphs;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.*;
 import java.util.HashMap;
@@ -10,7 +13,9 @@ import java.util.stream.Collectors;
 
 @Data
 public final class Graph {
+    @Getter(value = AccessLevel.PRIVATE)
     private final HashMap<Integer,Vertex> vertexHashMap;
+
     private TypeOfGraph typeOfGraph;
 
     public Graph() {
