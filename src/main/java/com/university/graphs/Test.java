@@ -6,5 +6,7 @@ public class Test {
     public static void main(String[] args) {
         Graph graph = new Graph("src/main/resources/input.txt");
         graph.getVertexHashMap().forEach((index, vertex)-> System.out.println(vertex));
+        System.out.println(graph.getTypeOfGraph());
+        graph.writeInFile("src/main/resources/output.txt");
     }
 }

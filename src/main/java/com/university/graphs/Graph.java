@@ -3,10 +3,8 @@ package com.university.graphs;
 import lombok.Data;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -48,11 +46,11 @@ public final class Graph {
     }
 
     public void addArc(int from, int to){
-        if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
+        if(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).addArc(to, 1);
             vertexHashMap.get(to).addArc(from, 1);
         }
-        else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
+        else if(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)){
             vertexHashMap.get(from).addArc(to, 1);
         }
         else if(typeOfGraph != null){
@@ -64,11 +62,11 @@ public final class Graph {
     }
 
     public void addArcWithWeight(int from, int to, int weight){
-        if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS)) {
+        if(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).addArc(to, weight);
             vertexHashMap.get(to).addArc(from, weight);
         }
-        else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)){
+        else if(TypeOfGraph.ORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
             vertexHashMap.get(from).addArc(to, weight);
         }
         else if(typeOfGraph != null){
@@ -80,13 +78,13 @@ public final class Graph {
     }
 
     public void deleteArc(int from, int to){
-        if(typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS) ||
-                typeOfGraph.equals(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS)) {
+        if(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph) ||
+                TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).deleteArc(to);
             vertexHashMap.get(to).deleteArc(from);
         }
-        else if(typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHWEIGHTS)||
-                typeOfGraph.equals(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS)){
+        else if(TypeOfGraph.ORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)||
+                TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)){
             vertexHashMap.get(from).deleteArc(to);
         }
         else{
@@ -104,41 +102,111 @@ public final class Graph {
         vertexHashMap.remove(vertexHashMap.get(vertId));
     }
 
-    public void show(){
-
+    private boolean isHasAVertexFrom(Integer id){
+        AtomicBoolean flag = new AtomicBoolean(false);
+        vertexHashMap.forEach((index,vertex)->{
+            if(vertex.getArcs().containsKey(id)){
+                flag.set(true);
+            }
+        });
+        return flag.get();
     }
+
+    public void writeInFile(String fileName){
+        try(BufferedWriter fout = new BufferedWriter(new FileWriter(fileName))) {
+            if(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)||
+                    TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
+                vertexHashMap.forEach((idFrom ,vertex)->{
+                    if(!isHasAVertexFrom(idFrom) && vertex.getArcs().isEmpty()){
+                        try {
+                            fout.write(String.valueOf(idFrom));
+                            fout.newLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    vertex.getArcs().forEach((idTo,weight)->{
+                        try {
+                            fout.write(idFrom + "-" + idTo);
+                            if(TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
+                                fout.write("(" + weight + ")");
+                            }
+                            fout.newLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            }
+            else if(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)||
+                    TypeOfGraph.ORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
+                vertexHashMap.forEach((idFrom ,vertex)->{
+                    if(!isHasAVertexFrom(idFrom) && vertex.getArcs().isEmpty()){
+                        try {
+                            fout.write(String.valueOf(idFrom));
+                            fout.newLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    vertex.getArcs().forEach((idTo,weight)->{
+                        try {
+                            fout.write(idFrom + ">" + idTo);
+                            if(TypeOfGraph.ORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
+                                fout.write("(" + weight + ")");
+                            }
+                            fout.newLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+            }
+            else{
+                throw new IllegalArgumentException();
+            }
+        }
+        catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
 
     private void initGraph(String fileName){
         try(BufferedReader fin=new BufferedReader(new FileReader(fileName)))
         {
             List<String> lines = fin.lines().collect(Collectors.toUnmodifiableList());
 
-            lines.forEach(line->{
+            for (String line:
+                 lines) {
                 if(line.contains(">")){
                     if(line.contains("(")){
                         typeOfGraph = TypeOfGraph.ORIENTEERINGWITHWEIGHTS;
-
-                        initWithWeight(line);
+                        break;
                     }
                     else{
                         typeOfGraph = TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS;
-
-                        initWithOutWeight(line);
+                        break;
                     }
                 }
                 else{
                     if(line.contains("(")){
                         typeOfGraph = TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS;
-
-                        initWithWeight(line);
+                        break;
                     }
                     else{
                         typeOfGraph = TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS;
-
-                        initWithOutWeight(line);
                     }
                 }
-            });
+            }
+
+            if(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)||
+                    TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)) {
+                lines.forEach(line->initWithOutWeight(line));
+            }
+            else{
+                lines.forEach(line->initWithWeight(line));
+            }
         }
         catch(IOException ex){
             System.out.println(ex.getMessage());
@@ -149,10 +217,16 @@ public final class Graph {
         String strFirstId = "";
         String strSecondId = "";
         String strWeight = "";
+        boolean twoVertex = true;
 
+        outerLoop:
         for(int i = 0; i < line.length(); i++){
             while(Character.isDigit(line.charAt(i))){
                 strFirstId += line.charAt(i);
+                if(i == line.length() - 1){
+                    twoVertex = false;
+                    break outerLoop;
+                }
                 i++;
             }
             i++;
@@ -168,36 +242,46 @@ public final class Graph {
         }
 
         int firstId = Integer.parseInt(strFirstId);
-        int secondId = Integer.parseInt(strSecondId);
-        int weight = Integer.parseInt(strWeight);
+        if(twoVertex){
+            int secondId = Integer.parseInt(strSecondId);
+            int weight = Integer.parseInt(strWeight);
 
-        AtomicBoolean first = new AtomicBoolean(false);
-        AtomicBoolean second = new AtomicBoolean(false);
-        vertexHashMap.forEach((index, vertex) ->{
-            if(vertex.getId() == firstId){
-                first.set(true);
+            AtomicBoolean first = new AtomicBoolean(false);
+            AtomicBoolean second = new AtomicBoolean(false);
+            vertexHashMap.forEach((index, vertex) ->{
+                if(vertex.getId() == firstId){
+                    first.set(true);
+                }
+                else if(vertex.getId() == secondId){
+                    second.set(true);
+                }
+            });
+            if(!first.get()) {
+                addVertex(firstId);
             }
-            else if(vertex.getId() == secondId){
-                second.set(true);
+            if(!second.get()) {
+                addVertex(secondId);
             }
-        });
-        if(!first.get()) {
+            addArcWithWeight(firstId,secondId,weight);
+        }
+        else{
             addVertex(firstId);
         }
-        if(!second.get()) {
-            addVertex(secondId);
-        }
-        addArcWithWeight(firstId,secondId,weight);
     }
 
     private void initWithOutWeight(String line){
         String strFirstId = "";
         String strSecondId = "";
+        boolean twoVertex = true;
 
         outerLoop:
         for(int i = 0; i < line.length();){
             while(Character.isDigit(line.charAt(i))){
                 strFirstId += line.charAt(i);                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
+                if(i == line.length() - 1){
+                    twoVertex = false;
+                    break outerLoop;
+                }
                 i++;
             }
             i++;
@@ -211,26 +295,30 @@ public final class Graph {
         }
 
         int firstId = Integer.parseInt(strFirstId);
-        int secondId = Integer.parseInt(strSecondId);
-
-
-        AtomicBoolean first = new AtomicBoolean(false);
-        AtomicBoolean second = new AtomicBoolean(false);
-        vertexHashMap.forEach((index, vertex) ->{
-            if(vertex.getId() == firstId){
-                first.set(true);
+        if(twoVertex){
+            int secondId = Integer.parseInt(strSecondId);
+            AtomicBoolean first = new AtomicBoolean(false);
+            AtomicBoolean second = new AtomicBoolean(false);
+            vertexHashMap.forEach((index, vertex) ->{
+                if(vertex.getId() == firstId){
+                    first.set(true);
+                }
+                else if(vertex.getId() == secondId){
+                    second.set(true);
+                }
+            });
+            if(!first.get()) {
+                addVertex(firstId);
             }
-            else if(vertex.getId() == secondId){
-                second.set(true);
+            if(!second.get()) {
+                addVertex(secondId);
             }
-        });
-        if(!first.get()) {
+            addArc(firstId, secondId);
+        }
+        else{
             addVertex(firstId);
         }
-        if(!second.get()) {
-            addVertex(secondId);
-        }
-        addArc(firstId, secondId);
+
     }
 
 }

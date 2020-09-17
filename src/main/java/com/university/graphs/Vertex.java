@@ -3,7 +3,6 @@ package com.university.graphs;
 import lombok.Data;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 @Data
 public class Vertex {
