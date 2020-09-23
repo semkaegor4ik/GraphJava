@@ -3,6 +3,7 @@ package com.university.graphs;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 public class Vertex implements Cloneable {
@@ -34,6 +35,19 @@ public class Vertex implements Cloneable {
         else {
             arcs.remove(id);
         }
+    }
+
+    public boolean isIsomorphic(Vertex otherVertex){
+        AtomicBoolean isomorphism = new AtomicBoolean(true);
+        otherVertex.arcs.forEach((id, weight)->{
+            if(!arcs.containsKey(id))
+                isomorphism.set(false);
+        });
+        arcs.forEach((id, weight)->{
+            if(!otherVertex.arcs.containsKey(id))
+                isomorphism.set(false);
+        });
+        return isomorphism.get();
     }
 
 

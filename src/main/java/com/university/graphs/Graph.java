@@ -128,12 +128,25 @@ public final class Graph {
     }
 
     public boolean isIsomorphic(Graph otherGraph){
-        boolean isomorphism = true;
+        AtomicBoolean isomorphism = new AtomicBoolean(true);
+        otherGraph.vertexHashMap.forEach((id, vertex)->{
+            if(!vertexHashMap.containsKey(id))
+                isomorphism.set(false);
+        });
+        vertexHashMap.forEach((id, vertex)->{
+            if(!otherGraph.vertexHashMap.containsKey(id))
+                isomorphism.set(false);
+        });
 
-
-
-
-        return isomorphism;
+        otherGraph.vertexHashMap.forEach((otherId, otherVertex)->{
+            vertexHashMap.forEach((id, vertex)->{
+                if(!vertex.isIsomorphic(otherVertex)&&
+                        (otherId == id)){
+                    isomorphism.set(false);
+                }
+            });
+        });
+        return isomorphism.get();
     }
 
     public void deleteVertex(int vertId){
