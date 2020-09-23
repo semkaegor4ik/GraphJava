@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.HashMap;
 
 @Data
-public class Vertex {
+public class Vertex implements Cloneable {
     private final int id;
     private final HashMap<Integer,Integer> arcs;
 
@@ -35,5 +35,6 @@ public class Vertex {
             arcs.remove(id);
         }
     }
+
 
 }

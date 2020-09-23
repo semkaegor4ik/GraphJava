@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -27,9 +28,8 @@ public final class Graph {
     }
 
     public Graph(Graph graph){
-        vertexHashMap = new HashMap<>();
         typeOfGraph = graph.getTypeOfGraph();
-        vertexHashMap.putAll(graph.getVertexHashMap());
+        vertexHashMap = cloneGraph(graph.getVertexHashMap());
     }
 
     public Graph(TypeOfGraph typeOfGraph) {
@@ -37,6 +37,22 @@ public final class Graph {
         vertexHashMap = new HashMap<>();
     }
 
+    public void show(){
+        vertexHashMap.forEach((id, vertex) -> System.out.println(vertex));
+    }
+
+    private HashMap<Integer,Vertex> cloneGraph(HashMap<Integer,Vertex> otherGraph){
+        HashMap<Integer,Vertex> vertexMap = new HashMap<>();
+
+        otherGraph.forEach((id,vertex)->{
+            Vertex vertex1 = new Vertex(id);
+            vertex.getArcs().forEach((index, weight)->{
+                vertex1.addArc(index, weight);
+            });
+            vertexMap.put(id, vertex1);
+        });
+        return vertexMap;
+    }
     public void addVertex(int id){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
@@ -96,14 +112,40 @@ public final class Graph {
         }
     }
 
+    public void showVertexDegrees(){
+        vertexHashMap.forEach((id, vertex)->{
+            int vertexDegree = vertex.getArcs().size();
+            System.out.println("Vertex ID - " + id + " degree - " + vertexDegree);
+        });
+    }
+
+    public void showHangingGraphVertices(){
+        vertexHashMap.forEach((id, vertex)->{
+            if(vertex.getArcs().size() == 0) {
+                System.out.println("Vertex ID - " + id);
+            }
+        });
+    }
+
+    public boolean isIsomorphic(Graph otherGraph){
+        boolean isomorphism = true;
+
+
+
+
+        return isomorphism;
+    }
+
     public void deleteVertex(int vertId){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
         vertexHashMap.forEach((index, vertex) -> {
-            vertex.deleteArc(vertId);
+            if(vertex.getArcs().containsKey(vertId)){
+                vertex.getArcs().remove(vertId);
+            }
         });
-        vertexHashMap.remove(vertexHashMap.get(vertId));
+        vertexHashMap.remove(vertId);
     }
 
     private boolean isHasAVertexFrom(Integer id){
