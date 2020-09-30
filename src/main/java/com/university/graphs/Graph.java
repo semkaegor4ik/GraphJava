@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Data
@@ -41,18 +42,6 @@ public final class Graph {
         vertexHashMap.forEach((id, vertex) -> System.out.println(vertex));
     }
 
-    private HashMap<Integer,Vertex> cloneGraph(HashMap<Integer,Vertex> otherGraph){
-        HashMap<Integer,Vertex> vertexMap = new HashMap<>();
-
-        otherGraph.forEach((id,vertex)->{
-            Vertex vertex1 = new Vertex(id);
-            vertex.getArcs().forEach((index, weight)->{
-                vertex1.addArc(index, weight);
-            });
-            vertexMap.put(id, vertex1);
-        });
-        return vertexMap;
-    }
     public void addVertex(int id){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
@@ -117,7 +106,7 @@ public final class Graph {
             int vertexDegree = vertex.getArcs().size();
             System.out.println("Vertex ID - " + id + " degree - " + vertexDegree);
         });
-    }
+    }                   //rewrite
 
     public void showHangingGraphVertices(){
         vertexHashMap.forEach((id, vertex)->{
@@ -125,7 +114,7 @@ public final class Graph {
                 System.out.println("Vertex ID - " + id);
             }
         });
-    }
+    }            //rewrite
 
     public boolean isIsomorphic(Graph otherGraph){
         AtomicBoolean isomorphism = new AtomicBoolean(true);
@@ -149,6 +138,45 @@ public final class Graph {
         return isomorphism.get();
     }
 
+    public int numberOfStronglyBondedComponents(){
+        AtomicInteger numberOfStronglyBondedComponents = new AtomicInteger();
+        vertexHashMap.forEach((id, vertex)->{
+            vertexHashMap.forEach((id1, vertex1)->{
+                if(vertex.getArcs().containsKey(id1)&&
+                        vertex1.getArcs().containsKey(id)){
+                    numberOfStronglyBondedComponents.getAndIncrement();
+                }
+            });
+        });
+        return numberOfStronglyBondedComponents.get()/2;
+    }
+
+    public List<Integer> inComeList(Integer id){
+        List<Integer> inComeList = new ArrayList<>();
+        vertexHashMap.forEach((index, vertex)->{
+            if(vertex.getArcs().containsKey(id)){
+                inComeList.add(index);
+            }
+        });
+        return inComeList;
+    }
+
+    public int numberOfConnectivityComponents(){
+        AtomicInteger count = new AtomicInteger(0);
+        List<Integer> vertexes = new ArrayList<>();
+        vertexHashMap.forEach((id, vertex)->{
+            vertexes.add(id);
+        });
+
+        vertexHashMap.forEach((id, vertex)->{
+            if(vertexes.contains(id)) {
+                recourseForNumberOfConnectivityComponents(id, vertexes);
+                count.getAndIncrement();
+            }
+        });
+        return count.get();
+    }
+
     public void deleteVertex(int vertId){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
@@ -161,22 +189,12 @@ public final class Graph {
         vertexHashMap.remove(vertId);
     }
 
-    private boolean isHasAVertexFrom(Integer id){
-        AtomicBoolean flag = new AtomicBoolean(false);
-        vertexHashMap.forEach((index,vertex)->{
-            if(vertex.getArcs().containsKey(id)){
-                flag.set(true);
-            }
-        });
-        return flag.get();
-    }
-
     public void writeInFile(String fileName){
         try(BufferedWriter fout = new BufferedWriter(new FileWriter(fileName))) {
             if(TypeOfGraph.NOTORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)||
                     TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
                 vertexHashMap.forEach((idFrom ,vertex)->{
-                    if(!isHasAVertexFrom(idFrom) && vertex.getArcs().isEmpty()){
+                    if(inComeList(idFrom).isEmpty() && vertex.getArcs().isEmpty()){
                         try {
                             fout.write(String.valueOf(idFrom));
                             fout.newLine();
@@ -200,7 +218,7 @@ public final class Graph {
             else if(TypeOfGraph.ORIENTEERINGWITHOUTWEIGHTS.equals(typeOfGraph)||
                     TypeOfGraph.ORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
                 vertexHashMap.forEach((idFrom ,vertex)->{
-                    if(!isHasAVertexFrom(idFrom) && vertex.getArcs().isEmpty()){
+                    if(inComeList(idFrom).isEmpty() && vertex.getArcs().isEmpty()){
                         try {
                             fout.write(String.valueOf(idFrom));
                             fout.newLine();
@@ -230,6 +248,26 @@ public final class Graph {
         }
     }
 
+    private void recourseForNumberOfConnectivityComponents(Integer id, List<Integer> vertexes){
+        if(vertexes.contains(id)){
+            vertexes.remove(id);
+            vertexHashMap.get(id).getArcs().forEach((index, weight)-> recourseForNumberOfConnectivityComponents(index, vertexes));
+            inComeList(id).forEach(index-> recourseForNumberOfConnectivityComponents(index, vertexes));
+        }
+    }
+
+    private HashMap<Integer,Vertex> cloneGraph(HashMap<Integer,Vertex> otherGraph){
+        HashMap<Integer,Vertex> vertexMap = new HashMap<>();
+
+        otherGraph.forEach((id,vertex)->{
+            Vertex vertex1 = new Vertex(id);
+            vertex.getArcs().forEach((index, weight)->{
+                vertex1.addArc(index, weight);
+            });
+            vertexMap.put(id, vertex1);
+        });
+        return vertexMap;
+    }
 
     private void initGraph(String fileName){
         try(BufferedReader fin=new BufferedReader(new FileReader(fileName)))
@@ -377,8 +415,6 @@ public final class Graph {
         else{
             addVertex(firstId);
         }
-
     }
 
 }
-
