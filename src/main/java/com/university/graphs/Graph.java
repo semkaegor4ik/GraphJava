@@ -138,17 +138,19 @@ public final class Graph {
         return isomorphism.get();
     }
 
-    public int numberOfStronglyBondedComponents(){
-        AtomicInteger numberOfStronglyBondedComponents = new AtomicInteger();
+    public List<Arc> StronglyBondedComponents(){
+        List<Arc> arcs = new ArrayList<>();
         vertexHashMap.forEach((id, vertex)->{
             vertexHashMap.forEach((id1, vertex1)->{
                 if(vertex.getArcs().containsKey(id1)&&
-                        vertex1.getArcs().containsKey(id)){
-                    numberOfStronglyBondedComponents.getAndIncrement();
+                        vertex1.getArcs().containsKey(id)&&
+                !arcs.contains(new Arc(id1, id))){
+                    Arc newArc = new Arc(id, id1);
+                    arcs.add(newArc);
                 }
             });
         });
-        return numberOfStronglyBondedComponents.get()/2;
+        return arcs;
     }
 
     public List<Integer> inComeList(Integer id){
@@ -247,6 +249,24 @@ public final class Graph {
             ex.printStackTrace();
         }
     }
+
+    /*public Graph minimalOstTree(){
+        if(!TypeOfGraph.NOTORIENTEERINGWITHWEIGHTS.equals(typeOfGraph)){
+            throw  new IllegalArgumentException("Graph must be orienteering with weights");
+        }
+        else {
+            Graph newGraph = new Graph(typeOfGraph);
+            vertexHashMap.forEach((id, vertex) -> newGraph.addVertex(id));
+            noname(newGraph);
+            return newGraph;
+        }
+    }
+
+    private void noname(Graph otherGraph){
+        this.vertexHashMap.forEach((id, vertex)->{
+
+        });
+    }*/
 
     private void recourseForNumberOfConnectivityComponents(Integer id, List<Integer> vertexes){
         if(vertexes.contains(id)){
