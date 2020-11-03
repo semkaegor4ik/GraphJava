@@ -50,5 +50,4 @@ public class Vertex implements Cloneable {
         return isomorphism.get();
     }
 
-
 }
