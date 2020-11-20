@@ -5,7 +5,6 @@ import java.util.HashMap;
 public class Test {
     public static void main(String[] args) {
         Graph graph = new Graph("src/main/resources/input.txt");
-        graph.show();
-        System.out.println(graph.dijkstra(3));
+        System.out.println(graph.allWays(1,3));
     }
 }

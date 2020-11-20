@@ -7,8 +7,9 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @Data
-public class Arc {
+public class ArcWithFlow {
     private Integer firstId;
     private Integer secondId;
     private Integer weight;
+    private Integer flow;
 }

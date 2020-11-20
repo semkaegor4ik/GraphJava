@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Data
 public final class Graph {
+
     @Getter(value = AccessLevel.PRIVATE)
     private final HashMap<Integer,Vertex> vertexHashMap;
 
@@ -40,7 +41,7 @@ public final class Graph {
         vertexHashMap.forEach((id, vertex) -> System.out.println(vertex));
     }
 
-    public void addVertex(int id){
+    public void addVertex(Integer id){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
@@ -52,7 +53,7 @@ public final class Graph {
         vertexHashMap.put(id, new Vertex(id));
     }
 
-    public void addArc(int from, int to){
+    public void addArc(Integer from, Integer to){
         if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).addArc(to, 1);
             vertexHashMap.get(to).addArc(from, 1);
@@ -68,7 +69,7 @@ public final class Graph {
         }
     }
 
-    public void addArcWithWeight(int from, int to, int weight){
+    public void addArcWithWeight(Integer from, Integer to, Integer weight){
         if(TypeOfGraph.NOT_ORIENTEERING_WITH_WEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).addArc(to, weight);
             vertexHashMap.get(to).addArc(from, weight);
@@ -84,7 +85,7 @@ public final class Graph {
         }
     }
 
-    public void deleteArc(int from, int to){
+    public void deleteArc(Integer from, Integer to){
         if(TypeOfGraph.NOT_ORIENTEERING_WITH_WEIGHTS.equals(typeOfGraph) ||
                 TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)) {
             vertexHashMap.get(from).deleteArc(to);
@@ -159,12 +160,24 @@ public final class Graph {
     }
 
     public Map<Integer, Integer> dijkstra(int from){
+
+        if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)
+                || TypeOfGraph.ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph))
+            throw new IllegalArgumentException("your graph need to have weights");
+        else if(typeOfGraph == null)
+            throw new NullPointerException("type of graph didn't be init");
+
+        vertexHashMap.forEach((id,vertex)->vertex.getArcs().forEach((index, weight)->{
+            if(weight < 0)
+                throw new IllegalArgumentException("your graph need to have only positive weights");
+        }));
+
         Map<Integer, Integer> dijkstraResult = new HashMap<>();
         vertexHashMap.forEach((id,vertex)->{
             if(id!=from)
-                dijkstraResult.put(id,Integer.MAX_VALUE);
+                dijkstraResult.put(id, Integer.MAX_VALUE);
             else
-                dijkstraResult.put(id,0);
+                dijkstraResult.put(id, 0);
         });
 
         Map<Integer, Boolean> used = new HashMap<>();
@@ -193,18 +206,18 @@ public final class Graph {
         return dijkstraResult;
     }
 
-    public boolean hasAWay(int from, int to, List<Integer> vertexesList){
+    public boolean hasAWay(Integer from, Integer to, List<Integer> vertexesList){
         vertexesList.remove(from);
-        AtomicBoolean hasAWay = new AtomicBoolean(false);
-        vertexHashMap.get(from).getArcs().forEach((id, weight)->{
-            if(id == to){
-                hasAWay.set(true);
+        for (Integer id:
+                vertexHashMap.get(from).getArcs().keySet()) {
+            if(id.equals(to)){
+                return true;
             }
             else if(vertexesList.contains(id)){
-                hasAWay.set(hasAWay(id, to, vertexesList));
+                hasAWay(id, to, vertexesList);
             }
-        });
-        return hasAWay.get();
+        }
+        return false;
     }
 
     public boolean isIsomorphic(Graph otherGraph){
@@ -218,14 +231,12 @@ public final class Graph {
                 isomorphism.set(false);
         });
 
-        otherGraph.vertexHashMap.forEach((otherId, otherVertex)->{
-            vertexHashMap.forEach((id, vertex)->{
-                if(!vertex.isIsomorphic(otherVertex)&&
-                        (otherId == id)){
-                    isomorphism.set(false);
-                }
-            });
-        });
+        otherGraph.vertexHashMap.forEach((otherId, otherVertex)-> vertexHashMap.forEach((id, vertex)->{
+            if(!vertex.isIsomorphic(otherVertex)&&
+                    (otherId.equals(id))){
+                isomorphism.set(false);
+            }
+        }));
         return isomorphism.get();
     }
 
@@ -233,16 +244,14 @@ public final class Graph {
         if(TypeOfGraph.ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)
                 || TypeOfGraph.ORIENTEERING_WITH_WEIGHTS.equals(typeOfGraph)) {
             List<Arc> arcs = new ArrayList<>();
-            vertexHashMap.forEach((id, vertex) -> {
-                vertexHashMap.forEach((id1, vertex1) -> {
-                    if (vertex.getArcs().containsKey(id1) &&
-                            vertex1.getArcs().containsKey(id) &&
-                            !arcs.contains(new Arc(id1, id))) {
-                        Arc newArc = new Arc(id, id1);
-                        arcs.add(newArc);
-                    }
-                });
-            });
+            vertexHashMap.forEach((id, vertex) -> vertexHashMap.forEach((id1, vertex1) -> {
+                if (vertex.getArcs().containsKey(id1) &&
+                        vertex1.getArcs().containsKey(id) &&
+                        !arcs.contains(new Arc(id1, id, vertex1.getArcs().get(vertex)))) {
+                    Arc newArc = new Arc(id, id1, vertex.getArcs().get(vertex1));
+                    arcs.add(newArc);
+                }
+            }));
             return arcs;
         }
         else if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)
@@ -264,32 +273,33 @@ public final class Graph {
         return inComeList;
     }
 
-    public int numberOfConnectivityComponents(){
+    public List<Set<Integer>> getConnectivityComponents(){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
 
-        AtomicInteger count = new AtomicInteger(0);
+        List<Set<Integer>> connectivityComponents =  new ArrayList<>();
         List<Integer> vertexes = getVertexesList();
 
         vertexHashMap.forEach((id, vertex)->{
             if(vertexes.contains(id)) {
-                recourseForNumberOfConnectivityComponents(id, vertexes);
-                count.getAndIncrement();
+                Set<Integer> component = new HashSet<>();
+                recourseForConnectivityComponents(id, vertexes,component);
+                connectivityComponents.add(component);
             }
         });
-        return count.get();
+        return connectivityComponents;
     }
 
-    public void deleteVertex(int vertId){
+    public int numberOfConnectivityComponents(){
+        return getConnectivityComponents().size();
+    }
+
+    public void deleteVertex(Integer vertId){
         if(typeOfGraph == null){
             throw new NullPointerException("type of graph didn't be init");
         }
-        vertexHashMap.forEach((index, vertex) -> {
-            if(vertex.getArcs().containsKey(vertId)){
-                vertex.getArcs().remove(vertId);
-            }
-        });
+        vertexHashMap.forEach((index, vertex) -> vertex.getArcs().remove(vertId));
         vertexHashMap.remove(vertId);
     }
 
@@ -358,16 +368,84 @@ public final class Graph {
         return vertexesList;
     }
 
-    private void recourseForNumberOfConnectivityComponents(Integer id, List<Integer> vertexes){
+    public Graph getMinOstTree(){
+        if(!TypeOfGraph.NOT_ORIENTEERING_WITH_WEIGHTS.equals(typeOfGraph))
+            throw new IllegalArgumentException("your graph need to be not orienteering with weights");
+        Graph graph = new Graph(typeOfGraph);
+        getVertexesList().forEach(graph::addVertex);
+
+        while (true){
+            List<Set<Integer>> components = graph.getConnectivityComponents();
+            if(components.size()==1)
+                break;
+            components.forEach(set->{
+                AtomicInteger min = new AtomicInteger(Integer.MAX_VALUE);
+                AtomicInteger minIdFrom = new AtomicInteger(Integer.MIN_VALUE);
+                AtomicInteger minIdTo = new AtomicInteger(Integer.MIN_VALUE);
+                set.forEach(vertex-> vertexHashMap.get(vertex).getArcs().forEach((id, weight)->{
+                    if(!set.contains(id) && weight< min.get()){
+                        min.set(weight);
+                        minIdFrom.set(vertex);
+                        minIdTo.set(id);
+                    }
+                }));
+                if(!graph.vertexHashMap.get(minIdTo.get()).getArcs().containsKey(minIdFrom.get())){
+                    graph.addArcWithWeight(minIdFrom.get(), minIdTo.get(), min.get());
+                }
+            });
+        }
+        return graph;
+    }
+
+    public Map<Integer,Integer> fordBellman(Integer vertexId){
+        if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)
+                || TypeOfGraph.ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph))
+            throw new IllegalArgumentException("your graph need to have weights");
+        else if(typeOfGraph == null)
+            throw new NullPointerException("type of graph didn't be init");
+
+        Set<Arc> arcs = new HashSet();
+        Map<Integer,Integer> result = new HashMap<>();
+        vertexHashMap.forEach((id, vertex)->{
+            if(!id.equals(vertexId))
+                result.put(id, Integer.MAX_VALUE);
+            else
+                result.put(id, 0);
+            vertex.getArcs().forEach((index, weight)->arcs.add(new Arc(id, index, weight)));
+        });
+        result.forEach((id, distance) -> arcs.forEach(arc ->{
+            if(result.get(arc.getFirstId()) < Integer.MAX_VALUE)
+                result.replace(arc.getSecondId(), Math.min(result.get(arc.getSecondId()), result.get(arc.getFirstId()) + arc.getWeight()));
+        }));
+        return result;
+    }
+
+    public Set<Map<Integer, Integer>> allMinDistance(){
+        Set<Map<Integer, Integer>> allMinDistance = new HashSet<>();
+        vertexHashMap.forEach((id, vertex)->allMinDistance.add(fordBellman(id)));
+        return allMinDistance;
+    }
+
+    public Map<Integer, Integer> allMinDistanceToVertex(Integer vertexId){
+        Map<Integer, Integer> allMinDistanceToVertex = new HashMap<>();
+        vertexHashMap.forEach((id, vertex)->{
+            allMinDistanceToVertex.put(id,fordBellman(id).get(vertexId));
+        });
+        return allMinDistanceToVertex;
+    }
+
+
+
+    private void recourseForConnectivityComponents(Integer id, List<Integer> vertexes, Set<Integer> component){
         if(vertexes.contains(id)){
             List<Integer> vertexesList = getVertexesList();
             vertexes.remove(id);
+            component.add(id);
             vertexHashMap.get(id).getArcs().forEach((index, weight)-> {
                 if(hasAWay(index, id, vertexesList)){
-                    recourseForNumberOfConnectivityComponents(index, vertexes);
+                    recourseForConnectivityComponents(index, vertexes, component);
                 }
             });
-            //inComeList(id).forEach(index-> recourseForNumberOfConnectivityComponents(index, vertexes));
         }
     }
 
@@ -376,9 +454,7 @@ public final class Graph {
 
         otherGraph.forEach((id,vertex)->{
             Vertex vertex1 = new Vertex(id);
-            vertex.getArcs().forEach((index, weight)->{
-                vertex1.addArc(index, weight);
-            });
+            vertex.getArcs().forEach(vertex1::addArc);
             vertexMap.put(id, vertex1);
         });
         return vertexMap;
@@ -414,10 +490,10 @@ public final class Graph {
 
             if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)||
                     TypeOfGraph.ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)) {
-                lines.forEach(line->initWithOutWeight(line));
+                lines.forEach(this::initWithOutWeight);
             }
             else{
-                lines.forEach(line->initWithWeight(line));
+                lines.forEach(this::initWithWeight);
             }
         }
         catch(IOException ex){
@@ -426,15 +502,15 @@ public final class Graph {
     }
 
     private void initWithWeight(String line){
-        String strFirstId = "";
-        String strSecondId = "";
-        String strWeight = "";
+        StringBuilder strFirstId = new StringBuilder();
+        StringBuilder strSecondId = new StringBuilder();
+        StringBuilder strWeight = new StringBuilder();
         boolean twoVertex = true;
 
         outerLoop:
         for(int i = 0; i < line.length(); i++){
             while(Character.isDigit(line.charAt(i))){
-                strFirstId += line.charAt(i);
+                strFirstId.append(line.charAt(i));
                 if(i == line.length() - 1){
                     twoVertex = false;
                     break outerLoop;
@@ -443,20 +519,20 @@ public final class Graph {
             }
             i++;
             while(Character.isDigit(line.charAt(i))){
-                strSecondId += line.charAt(i);                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
+                strSecondId.append(line.charAt(i));                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
                 i++;
             }
             i++;
             while(Character.isDigit(line.charAt(i))){
-                strWeight += line.charAt(i);                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
+                strWeight.append(line.charAt(i));                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
                 i++;
             }
         }
 
-        int firstId = Integer.parseInt(strFirstId);
+        int firstId = Integer.parseInt(strFirstId.toString());
         if(twoVertex){
-            int secondId = Integer.parseInt(strSecondId);
-            int weight = Integer.parseInt(strWeight);
+            int secondId = Integer.parseInt(strSecondId.toString());
+            int weight = Integer.parseInt(strWeight.toString());
 
             AtomicBoolean first = new AtomicBoolean(false);
             AtomicBoolean second = new AtomicBoolean(false);
@@ -482,14 +558,14 @@ public final class Graph {
     }
 
     private void initWithOutWeight(String line){
-        String strFirstId = "";
-        String strSecondId = "";
+        StringBuilder strFirstId = new StringBuilder();
+        StringBuilder strSecondId = new StringBuilder();
         boolean twoVertex = true;
 
         outerLoop:
         for(int i = 0; i < line.length();){
             while(Character.isDigit(line.charAt(i))){
-                strFirstId += line.charAt(i);                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
+                strFirstId.append(line.charAt(i));                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
                 if(i == line.length() - 1){
                     twoVertex = false;
                     break outerLoop;
@@ -498,7 +574,7 @@ public final class Graph {
             }
             i++;
             while(Character.isDigit(line.charAt(i))){
-                strSecondId += line.charAt(i);                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
+                strSecondId.append(line.charAt(i));                  //ОЧЕНЬ ПЛОХО, НО КОНКАТЕНАЦИЯ НЕ РАБОТАЕТ(НЕ ЗНАЮ ПОЧЕМУ)
                 if(i == line.length() - 1){
                     break outerLoop;
                 }
@@ -506,9 +582,9 @@ public final class Graph {
             }
         }
 
-        int firstId = Integer.parseInt(strFirstId);
+        int firstId = Integer.parseInt(strFirstId.toString());
         if(twoVertex){
-            int secondId = Integer.parseInt(strSecondId);
+            int secondId = Integer.parseInt(strSecondId.toString());
             AtomicBoolean first = new AtomicBoolean(false);
             AtomicBoolean second = new AtomicBoolean(false);
             vertexHashMap.forEach((index, vertex) ->{
@@ -531,5 +607,4 @@ public final class Graph {
             addVertex(firstId);
         }
     }
-
 }
