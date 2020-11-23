@@ -434,7 +434,77 @@ public final class Graph {
         return allMinDistanceToVertex;
     }
 
+    public List<Arc> getAllArcs(){
+        List<Arc> allArcs = new ArrayList<>();
+        vertexHashMap.forEach((id, vertex)->vertex.getArcs().forEach((index, weight)->allArcs.add(new Arc(id, index, weight))));
+        return allArcs;
+    }
 
+    public int getMaxFlow(Integer source, Integer stock){
+        if(TypeOfGraph.NOT_ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph)
+                ||TypeOfGraph.ORIENTEERING_WITHOUT_WEIGHTS.equals(typeOfGraph))
+            throw new IllegalArgumentException("your graph need to have weights");
+        else if(inComeList(stock).size()==0
+                ||vertexHashMap.get(source).getArcs().size()==0){
+            return -1;
+        }
+        Set<List<Arc>> allWays = getAllWays(source, stock);
+        List<ArcWithFlow> allArcsWithFlow= new ArrayList<>();
+        getAllArcs().forEach(arc->allArcsWithFlow.add(new ArcWithFlow(arc.getFirstId(), arc.getSecondId(), arc.getWeight(), 0)));
+
+        allWays.forEach(way->{
+            AtomicInteger min = new AtomicInteger(Integer.MAX_VALUE);
+            way.forEach(arc-> allArcsWithFlow.forEach(arcWithFlow -> {
+                if (arcWithFlow.getWeight() < min.get()
+                        &&arc.equalsArcWithFlow(arcWithFlow)) {
+                    min.set(arcWithFlow.getWeight());
+                }
+            }));
+            allArcsWithFlow.forEach(arcWithFlow->way.forEach(arc->{
+                if(arc.equalsArcWithFlow(arcWithFlow)){
+                    arcWithFlow.setFlow(arcWithFlow.getFlow() + min.get());
+                    arcWithFlow.setWeight(arcWithFlow.getWeight() - min.get());
+                }
+            }));
+        });
+
+        return allArcsWithFlow.stream().filter(arc -> arc.getFirstId().equals(source)).mapToInt(ArcWithFlow::getFlow).sum();
+    }
+
+    public Set<List<Arc>> getAllWays(Integer from, Integer to){
+        Set<List<Arc>> allWays = new HashSet<>();
+        recourseForAllWays(from, to, new ArrayList<>(), allWays);
+        return allWays;
+    }
+
+    private void recourseForAllWays(Integer from, Integer to, List<Arc> way, Set<List<Arc>>allWays){
+        outer:
+        for (Integer id:
+                vertexHashMap.get(from).getArcs().keySet()) {
+            for (Arc arc:
+                 way) {
+                if(arc.getFirstId().equals(id)
+                        ||arc.getSecondId().equals(id))
+                    continue outer;
+            }
+            if(id.equals(to)){
+                way.add(new Arc(from, id, vertexHashMap.get(from).getArcs().get(id)));
+                allWays.add(copyWay(way));
+                way.remove(way.size()-1);
+            }
+            else {
+                way.add(new Arc(from, id, vertexHashMap.get(from).getArcs().get(id)));
+                recourseForAllWays(id, to, way, allWays);
+                way.remove(way.size()-1);
+            }
+        }
+    }
+
+    private List<Arc> copyWay(List<Arc> way){
+        List<Arc> copyWay = new ArrayList<>();
+        way.forEach(arc -> copyWay.add(new Arc(arc.getFirstId(), arc.getSecondId(), arc.getWeight())));
+        return copyWay;
+    }
 
     private void recourseForConnectivityComponents(Integer id, List<Integer> vertexes, Set<Integer> component){
         if(vertexes.contains(id)){
