@@ -18,6 +18,8 @@ public final class Graph {
 
     private TypeOfGraph typeOfGraph;
 
+    private final UIController controller;
+
     public Graph() {
         vertexHashMap = new HashMap<>();
     }
@@ -35,6 +37,10 @@ public final class Graph {
     public Graph(TypeOfGraph typeOfGraph) {
         this.typeOfGraph = typeOfGraph;
         vertexHashMap = new HashMap<>();
+    }
+
+    {
+        controller = new UIController();
     }
 
     public void show(){
