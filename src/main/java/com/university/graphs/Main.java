@@ -11,9 +11,9 @@ public class Main extends Application {
     public static final int HEIGHT = 700;
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Graph graph = new Graph("src/main/resources/input.txt");
-        root = graph.getController().getRoot();
-        primaryStage.setResizable(false);
+        UIController controller = new UIController();
+        root = controller.getRoot();
+        //primaryStage.setResizable(false);
         primaryStage.setTitle("Boruvki");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();

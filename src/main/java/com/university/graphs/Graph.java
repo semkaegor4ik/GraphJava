@@ -18,7 +18,7 @@ public final class Graph {
 
     private TypeOfGraph typeOfGraph;
 
-    private final UIController controller;
+    private UIController controller;
 
     public Graph() {
         vertexHashMap = new HashMap<>();
@@ -39,8 +39,9 @@ public final class Graph {
         vertexHashMap = new HashMap<>();
     }
 
-    {
-        controller = new UIController();
+    public Graph(UIController controller) {
+        vertexHashMap = new HashMap<>();
+        this.controller = controller;
     }
 
     public void show(){
@@ -536,7 +537,7 @@ public final class Graph {
         return vertexMap;
     }
 
-    private void initGraph(String fileName){
+    public void initGraph(String fileName){
         try(BufferedReader fin=new BufferedReader(new FileReader(fileName)))
         {
             List<String> lines = fin.lines().collect(Collectors.toUnmodifiableList());
@@ -573,7 +574,7 @@ public final class Graph {
             }
         }
         catch(IOException ex){
-            System.out.println(ex.getMessage());
+            throw new IllegalArgumentException("Ошбка чтения файла");
         }
     }
 
