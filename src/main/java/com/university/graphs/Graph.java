@@ -578,6 +578,39 @@ public final class Graph {
         }
     }
 
+    public Graph UIGetMinOstTree(){
+        Graph graph = new Graph(typeOfGraph);
+        getVertexesList().forEach(graph::addVertex);
+
+        while (true){
+            List<Set<Integer>> components = graph.getConnectivityComponents();
+            if(components.size()==1)
+                break;
+            components.forEach(set->{
+                AtomicInteger min = new AtomicInteger(Integer.MAX_VALUE);
+                AtomicInteger minIdFrom = new AtomicInteger(Integer.MIN_VALUE);
+                AtomicInteger minIdTo = new AtomicInteger(Integer.MIN_VALUE);
+                set.forEach(vertex-> vertexHashMap.get(vertex).getArcs().forEach((id, weight)->{
+                    if(!set.contains(id) && weight< min.get()){
+                        min.set(weight);
+                        minIdFrom.set(vertex);
+                        minIdTo.set(id);
+                    }
+                }));
+                if(!graph.vertexHashMap.get(minIdTo.get()).getArcs().containsKey(minIdFrom.get())){
+                    graph.addArcWithWeight(minIdFrom.get(), minIdTo.get(), min.get());
+                    controller.printArc(minIdFrom.get(), minIdTo.get());
+                }
+            });
+            /*try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }*/
+        }
+        return graph;
+    }
+
     private void initWithWeight(String line){
         StringBuilder strFirstId = new StringBuilder();
         StringBuilder strSecondId = new StringBuilder();

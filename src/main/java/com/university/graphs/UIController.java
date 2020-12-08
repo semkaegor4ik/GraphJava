@@ -25,7 +25,9 @@ public class UIController {
 
     private final Button readFileBtn;
 
-    private final Graph graph;
+    private final Button startAlg;
+
+    private Graph graph;
 
     public UIController() {
         root = new Pane();
@@ -38,6 +40,12 @@ public class UIController {
         fileChooseText.setTranslateX(Main.WEIGHT/2);
         fileChooseText.setTranslateY(Main.HEIGHT/3);
 
+        startAlg = new Button();
+        startAlg.setText("Start");
+        startAlg.setOnAction(event -> {
+            start();
+        });
+
         readFileBtn = new Button();
         readFileBtn.setText("Enter");
         readFileBtn.setTranslateX(Main.WEIGHT/2);
@@ -45,15 +53,20 @@ public class UIController {
         readFileBtn.setOnAction(event -> {
             try {
                 graph.initGraph(fileChooseText.getText());
-                root.getChildren().removeAll(fileChooseText, readFileBtn);
-                writeGraph();
+                if(TypeOfGraph.NOT_ORIENTEERING_WITH_WEIGHTS.equals(graph.getTypeOfGraph())) {
+                    root.getChildren().removeAll(fileChooseText, readFileBtn);
+                    writeGraph();
+                }
+                else{
+                    fileChooseText.setText("your graph need to be not orienteering with weights");
+                    graph = new Graph();
+                }
             }
             catch (IllegalArgumentException e){
                 fileChooseText.setText(e.getMessage());
                 e.printStackTrace();
             }
         });
-
 
 
         root.getChildren().addAll(fileChooseText, readFileBtn);
@@ -90,10 +103,28 @@ public class UIController {
 
         vertexes.forEach((id,vertex)->root.getChildren().add(vertex.getStack()));
 
-
+        root.getChildren().add(startAlg);
     }
 
-    public void start(Graph graph){
-        
+    public void start(){
+        root.getChildren().remove(startAlg);
+        graph.UIGetMinOstTree();
+
+        arcs.forEach(arc->{
+            if(!arc.isPaint()){
+                root.getChildren().remove(arc.getStack());
+            }
+        });
     }
+
+    public void printArc(Integer firstId, Integer secondId){
+        arcs.forEach(arc->{
+            if(arc.getFirstId().equals(firstId) && arc.getSecondId().equals(secondId)
+                    ||arc.getFirstId().equals(secondId) && arc.getSecondId().equals(firstId)){
+                arc.paintArc();
+            }
+        });
+    }
+
+
 }

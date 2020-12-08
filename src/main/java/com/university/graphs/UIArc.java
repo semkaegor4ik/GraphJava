@@ -2,6 +2,7 @@ package com.university.graphs;
 
 import javafx.scene.Group;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -23,6 +24,8 @@ public class UIArc {
     private final Line line = new Line();
     private final Text text;
 
+    private boolean isPaint = false;
+
     public UIArc(double firstX, double firstY,Integer firstId, double secondX, double secondY, Integer secondId, int weight) {
         this.firstX = firstX;
         this.firstY = firstY;
@@ -37,12 +40,20 @@ public class UIArc {
         text.setBoundsType(TextBoundsType.VISUAL);
         text.setX((firstX+secondX)/2);
         text.setY((firstY+secondY)/2);
+
         line.setStartX(firstX + UIVertex.RADIUS);
         line.setStartY(firstY + UIVertex.RADIUS);
         line.setEndX(secondX + UIVertex.RADIUS);
         line.setEndY(secondY + UIVertex.RADIUS);
         line.setStrokeWidth(3);
-        stack.getChildren().addAll(line, text);
 
+        stack.getChildren().addAll(line, text);
+    }
+
+    public void paintArc(){
+        line.setStroke(Color.RED);
+        line.setStrokeWidth(3);
+        text.setFill(Color.RED);
+        isPaint = true;
     }
 }

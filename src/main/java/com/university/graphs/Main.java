@@ -13,7 +13,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         UIController controller = new UIController();
         root = controller.getRoot();
-        //primaryStage.setResizable(false);
+        primaryStage.setResizable(false);
         primaryStage.setTitle("Boruvki");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
