@@ -72,7 +72,6 @@ public class UIController {
             uiVertex.getStack().setTranslateY((Main.HEIGHT/2 - 20) - yUsually);
             vertexes.put(id, uiVertex);
             k.getAndIncrement();
-            root.getChildren().add(uiVertex.getStack());
         });
 
         List<Arc> allArcs = graph.getAllArcs();
@@ -89,6 +88,7 @@ public class UIController {
             root.getChildren().add(uiArc.getStack());
         });
 
+        vertexes.forEach((id,vertex)->root.getChildren().add(vertex.getStack()));
 
 
     }

@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class UIVertex {
     private final Integer id;
-    private static final double RADIUS = 15;
+    public static final double RADIUS = 15;
     private final Circle circle = new Circle(RADIUS);;
     private final Text text;
     private final StackPane stack = new StackPane();

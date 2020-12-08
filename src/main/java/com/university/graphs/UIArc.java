@@ -1,5 +1,6 @@
 package com.university.graphs;
 
+import javafx.scene.Group;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
@@ -17,7 +18,7 @@ public class UIArc {
     private final Integer secondId;
     private final int weight;
 
-    private final StackPane stack = new StackPane();
+    private final Group stack = new Group();
 
     private final Line line = new Line();
     private final Text text;
@@ -34,11 +35,13 @@ public class UIArc {
         text = new Text(String.valueOf(weight));
         text.setFont(new Font(30));
         text.setBoundsType(TextBoundsType.VISUAL);
-
-        line.setStartX(firstX);
-        line.setStartY(firstY);
-        line.setEndX(secondX);
-        line.setEndY(secondY);
+        text.setX((firstX+secondX)/2);
+        text.setY((firstY+secondY)/2);
+        line.setStartX(firstX + UIVertex.RADIUS);
+        line.setStartY(firstY + UIVertex.RADIUS);
+        line.setEndX(secondX + UIVertex.RADIUS);
+        line.setEndY(secondY + UIVertex.RADIUS);
+        line.setStrokeWidth(3);
         stack.getChildren().addAll(line, text);
 
     }
