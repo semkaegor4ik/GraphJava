@@ -1,5 +1,9 @@
 package com.university.graphs;
 
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -7,6 +11,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBoundsType;
+import javafx.util.Duration;
 import lombok.Data;
 
 @Data
@@ -51,9 +56,14 @@ public class UIArc {
     }
 
     public void paintArc(){
-        line.setStroke(Color.RED);
+
+        Timeline timeline = new Timeline(
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+        /*line.setStroke(Color.RED);
         line.setStrokeWidth(3);
         text.setFill(Color.RED);
-        isPaint = true;
+        isPaint = true;*/
     }
 }

@@ -602,11 +602,6 @@ public final class Graph {
                     controller.printArc(minIdFrom.get(), minIdTo.get());
                 }
             });
-            /*try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
         }
         return graph;
     }

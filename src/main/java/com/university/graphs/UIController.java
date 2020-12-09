@@ -1,9 +1,15 @@
 package com.university.graphs;
 
+import com.sun.prism.impl.TextureResourcePool;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -105,6 +111,7 @@ public class UIController {
 
         root.getChildren().add(startAlg);
     }
+
 
     public void start(){
         root.getChildren().remove(startAlg);
