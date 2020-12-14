@@ -221,7 +221,7 @@ public final class Graph {
                 return true;
             }
             else if(vertexesList.contains(id)){
-                return hasAWay(id, to, vertexesList);
+                hasAWay(id, to, vertexesList);
             }
         }
         return false;
