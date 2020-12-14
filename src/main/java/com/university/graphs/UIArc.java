@@ -56,14 +56,9 @@ public class UIArc {
     }
 
     public void paintArc(){
-
-        Timeline timeline = new Timeline(
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-        /*line.setStroke(Color.RED);
+        line.setStroke(Color.RED);
         line.setStrokeWidth(3);
         text.setFill(Color.RED);
-        isPaint = true;*/
+        isPaint = true;
     }
 }

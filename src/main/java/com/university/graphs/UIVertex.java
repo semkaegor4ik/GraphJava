@@ -31,5 +31,8 @@ public class UIVertex {
         stack.getChildren().addAll(circle, text);
     }
 
+    public void paintVertex(){
+        circle.setFill(Color.RED);
+    }
 
 }

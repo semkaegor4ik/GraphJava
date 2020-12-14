@@ -1,10 +1,7 @@
 package com.university.graphs;
 
 import com.sun.prism.impl.TextureResourcePool;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -33,13 +30,18 @@ public class UIController {
 
     private final Button startAlg;
 
+    private final AnimationTimer timer;
+
     private Graph graph;
+
+    private final Thread boruvkiThread;
 
     public UIController() {
         root = new Pane();
         graph = new Graph(this);
         vertexes = new HashMap<>();
         arcs = new ArrayList<>();
+        boruvkiThread = new Thread(new BoruvkiThread(this));
         root.setPrefSize(Main.WEIGHT, Main.HEIGHT);
         fileChooseText = new TextField();
         fileChooseText.setText("Write filename");
@@ -49,7 +51,7 @@ public class UIController {
         startAlg = new Button();
         startAlg.setText("Start");
         startAlg.setOnAction(event -> {
-            start();
+            startThread();
         });
 
         readFileBtn = new Button();
@@ -74,9 +76,24 @@ public class UIController {
             }
         });
 
+        timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if(!boruvkiThread.isAlive()){
+                    arcs.forEach(arc->{
+                        if(!arc.isPaint()){
+                            root.getChildren().remove(arc.getStack());
+                        }
+                    });
+                    timer.stop();
+                }
+            }
+        };
+
 
         root.getChildren().addAll(fileChooseText, readFileBtn);
     }
+
 
     private void writeGraph() {
         List<Integer> vertexesList = graph.getVertexesList();
@@ -113,15 +130,14 @@ public class UIController {
     }
 
 
-    public void start(){
+    private void startThread() {
         root.getChildren().remove(startAlg);
-        graph.UIGetMinOstTree();
+        boruvkiThread.start();
+        timer.start();
+    }
 
-        arcs.forEach(arc->{
-            if(!arc.isPaint()){
-                root.getChildren().remove(arc.getStack());
-            }
-        });
+    public void start(){
+        graph.UIGetMinOstTreeBorvki();
     }
 
     public void printArc(Integer firstId, Integer secondId){
@@ -134,4 +150,9 @@ public class UIController {
     }
 
 
+    public void printVertexes() {
+        vertexes.forEach((id, vertex)->{
+            vertex.paintVertex();
+        });
+    }
 }

@@ -221,7 +221,7 @@ public final class Graph {
                 return true;
             }
             else if(vertexesList.contains(id)){
-                hasAWay(id, to, vertexesList);
+                return hasAWay(id, to, vertexesList);
             }
         }
         return false;
@@ -484,6 +484,41 @@ public final class Graph {
         return allWays;
     }
 
+    public boolean hasAMinOstTree(){
+
+        for (Integer id:
+             vertexHashMap.keySet()) {
+            if(!hasAWay((Integer) 1, id, getVertexesList())
+                    && !id.equals((Integer) 1))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean hasACycle(){
+        for (Integer id:
+                vertexHashMap.keySet()) {
+            List<Integer> vertexesList = new ArrayList<>();
+            vertexesList.add(id);
+            if(recourseForCycle(id, vertexesList))
+                return true;
+        }
+        return false;
+    }
+
+    public Graph getMinOstTreeKraskal(){
+        if(!TypeOfGraph.NOT_ORIENTEERING_WITH_WEIGHTS.equals(typeOfGraph))
+            throw new IllegalArgumentException("your graph need to be not orienteering with weights");
+        Graph graph = new Graph(typeOfGraph);
+        getVertexesList().forEach(graph::addVertex);
+
+
+
+
+
+        return graph;
+    }
+
     private void recourseForAllWays(Integer from, Integer to, List<Arc> way, Set<List<Arc>>allWays){
         outer:
         for (Integer id:
@@ -524,6 +559,20 @@ public final class Graph {
                 }
             });
         }
+    }
+
+    private boolean recourseForCycle(Integer id, List<Integer> vertexesList){
+        for (Integer index:
+                vertexHashMap.get(id).getArcs().keySet()) {
+            if(vertexesList.contains(index)) {
+                return true;
+            }
+            else{
+                vertexesList.add(index);
+                recourseForCycle(index, vertexesList);
+            }
+        }
+        return false;
     }
 
     private HashMap<Integer,Vertex> cloneGraph(HashMap<Integer,Vertex> otherGraph){
@@ -578,10 +627,16 @@ public final class Graph {
         }
     }
 
-    public Graph UIGetMinOstTree(){
+    public Graph UIGetMinOstTreeBorvki(){
         Graph graph = new Graph(typeOfGraph);
         getVertexesList().forEach(graph::addVertex);
 
+        controller.printVertexes();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         while (true){
             List<Set<Integer>> components = graph.getConnectivityComponents();
             if(components.size()==1)
@@ -601,7 +656,13 @@ public final class Graph {
                     graph.addArcWithWeight(minIdFrom.get(), minIdTo.get(), min.get());
                     controller.printArc(minIdFrom.get(), minIdTo.get());
                 }
+
             });
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return graph;
     }
